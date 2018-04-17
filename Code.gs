@@ -3,8 +3,8 @@ function onOpen() {
   ui.createMenu('LS Calendar')
   .addItem('Create Calendar', 'create')
   .addItem('Delete Calendar', 'erase')
+  .addItem('Add Students', 'addStudents')
   .addToUi();
-  //console.log("test1");
 }
 
 function create(){
@@ -17,7 +17,6 @@ function create(){
   var lastDay = 0;
   var days = 0;
   var noSchool = [];
-  var regularPeriods = dataSheet.getRange("A3:E9").getDisplayValues();
   for(var i = 0; i<dataValues.length; i++){
     if(dataValues[i][0] == "First Day"){
       firstDay = dataValues[i][1]; 
@@ -46,24 +45,24 @@ function create(){
     }
   }
   
- 
   
-var calendar = CalendarApp.createCalendar(calendarName, {
-   summary: 'A calendar to organize students with periods in the Student Centre.',
+  
+  var calendar = CalendarApp.createCalendar(calendarName, {
+    summary: 'A calendar to organize students with periods in the Student Centre.',
     color: CalendarApp.Color.BLUE
- });  
+  });  
   
   setDays(days, new Date(firstDay),
-         new Date(lastDay), calendar, noSchool);
+          new Date(lastDay), calendar, noSchool);
   
- // var event = calendar.createEvent('Apollo 11 Landing',
-                                 //  new Date('April 17, 2018 20:00:00 EST'),
-                                //   new Date('April 17, 2018 21:00:00 EST'));
+  // var event = calendar.createEvent('Apollo 11 Landing',
+  //  new Date('April 17, 2018 20:00:00 EST'),
+  //   new Date('April 17, 2018 21:00:00 EST'));
   
 }
 
 function setDays(days, start, end, calendar, noSchool){
- 
+  
   var day = 1;
   // Returns an array of dates between the two dates --- from miguelmota on github
   var getDates = function(startDay, endDay) {
@@ -108,10 +107,60 @@ function NSCheck(noSchool, date){
   }
   return check;
 }
-function createEvents(calendar, regularPeriods, friPeriods){
+
+
+function addStudents(){
+  var ss = SpreadsheetApp.getActive();
+  var dataSheet = ss.getSheetByName("data"); 
+  var dataValues = dataSheet.getDataRange().getValues();
+  var sheets = ss.getSheets();
+  var calendarName = 0;
+  var firstDay = 0;
+  var lastDay = 0;
+  var days = 0;
+  var regularPeriods = dataSheet.getRange("A3:E9").getDisplayValues();
+  
+  for(var i = 0; i<dataValues.length; i++){
+    if(dataValues[i][0] == "First Day"){
+      firstDay = dataValues[i][1]; 
+    }
+    if(dataValues[i][0] == "Last Day"){
+      lastDay = dataValues[i][1];      
+    }
+    if(dataValues[i][0] == "Calendar Name"){
+      calendarName = dataValues[i][1]; 
+      break;
+    }    
+  }
+  
+  //track old and new students somehow
+  for(var i = 0; i<sheets.length; i++){
+    if(sheets[i].getName() != "data"){
+     var name = sheets[i].getName();
+     var studentSheet = sheets[i].getDataRange().getValues();
+      var studentSched = [];
+      
+      for(var j = 1; j< studentSheet.length; j++){
+         console.log(studentSheet[j][0]);
+        if(studentSheet[j][0] == "Schedule Day"){
+        }else if(studentSheet[j][0] == ""){
+          break;
+        }
+        else{
+         studentSched.push([studentSheet[j][0], studentSheet[j][1]]); 
+        }
+      }
+      console.log(studentSched);
+    }
+    
+    
+  }
   
 }
 
+function createEvents(studentName, studentSched, firstDay, lastDay, calendar){
+  
+}
 
 function erase(){
   var calendar = CalendarApp.getCalendarsByName("Learning Strategies Students")[0];
