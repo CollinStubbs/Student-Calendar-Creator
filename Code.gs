@@ -112,13 +112,13 @@ function NSCheck(noSchool, date){
 function addStudents(){
   var ss = SpreadsheetApp.getActive();
   var dataSheet = ss.getSheetByName("data"); 
-  var dataValues = dataSheet.getDataRange().getValues();
+  var dataValues = dataSheet.getDataRange().getDisplayValues();
   var sheets = ss.getSheets();
   var calendarName = 0;
   var firstDay = 0;
   var lastDay = 0;
   var days = 0;
-  var regularPeriods = dataSheet.getRange("A3:E9").getDisplayValues();
+  var regularPeriods = dataSheet.getRange("A3:E9").getDisplayValues(); //add fridays
   
   for(var i = 0; i<dataValues.length; i++){
     if(dataValues[i][0] == "First Day"){
@@ -141,7 +141,7 @@ function addStudents(){
       var studentSched = [];
       
       for(var j = 1; j< studentSheet.length; j++){
-         console.log(studentSheet[j][0]);
+        // console.log(studentSheet[j][0]);
         if(studentSheet[j][0] == "Schedule Day"){
         }else if(studentSheet[j][0] == ""){
           break;
@@ -150,16 +150,57 @@ function addStudents(){
          studentSched.push([studentSheet[j][0], studentSheet[j][1]]); 
         }
       }
-      console.log(studentSched);
+     // console.log(studentSched);
+      createEvents(name, studentSched, new Date(firstDay), new Date(lastDay), CalendarApp.getCalendarsByName(calendarName)[0], [regularPeriods]);
     }
     
     
   }
   
 }
+//add multiple periods
+function createEvents(studentName, studentSched, firstDay, lastDay, calendar, periods){
+  var dateRange = getDates(firstDay, lastDay);
+  console.log(periods);
+  for(var i = 0; i < dateRange.length; i++){
+    var event = calendar.getEventsForDay(dateRange[i], {search: "day"})[0];
+    if(event != undefined){
+      for(var j = 0; j<studentSched.length; j++){
+        var dayString = "Day "+studentSched[j][0];
+        if(event.getTitle() == dayString){
 
-function createEvents(studentName, studentSched, firstDay, lastDay, calendar){
-  
+          addToCalendar(periods, studentSched[j][1], studentName, calendar, dateRange[i]);
+        }
+      }
+    }
+  }
+}
+
+function addToCalendar(periods, lsPeriod, name, calendar, date){
+  for(var i = 0; i<periods[0].length; i++){
+    console.log(periods[0][i][0], lsPeriod);
+    if(periods[0][i][0] == lsPeriod){
+                
+
+    calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[0][i][1]), new Date(date.toDateString()+" "+ periods[0][i][2])); 
+    }
+  }
+}
+
+function getDates(startDate, stopDate) {
+  Date.prototype.addDays = function(days) {
+  var dat = new Date(this.valueOf());
+  dat.setDate(dat.getDate() + days);
+  return dat;
+}
+
+    var dateArray = new Array();
+    var currentDate = startDate;
+    while (currentDate <= stopDate) {
+        dateArray.push(new Date (currentDate));
+        currentDate = currentDate.addDays(1);
+    }
+    return dateArray;
 }
 
 function erase(){
