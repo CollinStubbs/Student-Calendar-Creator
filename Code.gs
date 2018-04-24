@@ -4,6 +4,7 @@ function onOpen() {
   .addItem('Create Calendar', 'create')
   .addItem('Delete Calendar', 'erase')
   .addItem('Add Students', 'addStudents')
+  .addItem('Clear Student', 'clearStudent')
   .addToUi();
 }
 
@@ -151,7 +152,7 @@ function addStudents(){
         }
       }
      // console.log(studentSched);
-      createEvents(name, studentSched, new Date(firstDay), new Date(lastDay), CalendarApp.getCalendarsByName(calendarName)[0], [regularPeriods]);
+      createEvents(name, studentSched, new Date(firstDay), new Date(lastDay), CalendarApp.getCalendarsByName(calendarName)[0], regularPeriods);
     }
     
     
@@ -161,7 +162,7 @@ function addStudents(){
 //add multiple periods
 function createEvents(studentName, studentSched, firstDay, lastDay, calendar, periods){
   var dateRange = getDates(firstDay, lastDay);
-  console.log(periods);
+  //console.log(periods);
   for(var i = 0; i < dateRange.length; i++){
     var event = calendar.getEventsForDay(dateRange[i], {search: "day"})[0];
     if(event != undefined){
@@ -177,12 +178,17 @@ function createEvents(studentName, studentSched, firstDay, lastDay, calendar, pe
 }
 
 function addToCalendar(periods, lsPeriod, name, calendar, date){
-  for(var i = 0; i<periods[0].length; i++){
-    console.log(periods[0][i][0], lsPeriod);
-    if(periods[0][i][0] == lsPeriod){
-                
-
-    calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[0][i][1]), new Date(date.toDateString()+" "+ periods[0][i][2])); 
+  for(var i = 0; i<periods.length; i++){
+    console.log(periods[i][0], lsPeriod);
+    if(date.getDay() != 5){
+      if(periods[0][i][0] == lsPeriod){
+        calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[0][i][1]), new Date(date.toDateString()+" "+ periods[0][i][2])); 
+      }
+    }
+    else{
+      if(periods[0][i][0] == lsPeriod){
+        calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[0][i][3]), new Date(date.toDateString()+" "+ periods[0][i][4])); 
+      }
     }
   }
 }
@@ -201,6 +207,24 @@ function getDates(startDate, stopDate) {
         currentDate = currentDate.addDays(1);
     }
     return dateArray;
+}
+
+function clearStudent(){
+    var calendar = CalendarApp.getCalendarsByName("Learning Strategies Students")[0];
+  var sheet = SpreadsheetApp.getActive().getSheetByName("data");
+  var name = sheet.getRange(17, 2).getDisplayValue();
+  var sDate = sheet.getRange(18, 2).getDisplayValue();
+  var eDate = sheet.getRange(19, 2).getDisplayValue();
+  
+   var dateRange = getDates(sDate, eDate);
+  
+  for(var i = 0; i < dateRange.length; i++){
+    var event = calendar.getEventsForDay(dateRange[i], {search: name});
+    
+    for(var j = 0; j<event.length; j++){
+     event[j].deleteEvent();//this doesnt delete everything
+    }
+  }
 }
 
 function erase(){
