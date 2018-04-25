@@ -286,6 +286,7 @@ function clearStudent(){
   var eDate = 0;
   
   for(var i = 0; i<dataValues.length; i++){
+    console.log(dataValues[i][0]);
     if(dataValues[i][0] == "Student to Clear"){
       name = dataValues[i][1]; 
     }
@@ -308,7 +309,8 @@ function clearStudent(){
   
   
   for(var i = 0; i < dateRange.length; i++){
-    var event = calendar.getEventsForDay(dateRange[i], {search: name});
+    var event = calendar.getEventsForDay(dateRange[i], {search: name}); // look at the console data for this, nothing is read
+    
     for(var j = 0; j<event.length; j++){
       event[j].deleteEvent();
     }
