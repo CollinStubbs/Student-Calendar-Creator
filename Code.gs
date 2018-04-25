@@ -5,6 +5,7 @@ function onOpen() {
   .addItem('Delete Calendar', 'erase')
   .addItem('Add Students', 'addStudents')
   .addItem('Clear Student', 'clearStudent')
+  .addItem('Clear Full Range', 'clearAll')
   .addToUi();
 }
 
@@ -137,7 +138,7 @@ function addStudents(){
   //track old and new students somehow
   for(var i = 0; i<sheets.length; i++){
     if(sheets[i].getName() != "data"){
-     var name = sheets[i].getName();
+     var name = sheets[i].getRange(1,1).getDisplayValue();
      var studentSheet = sheets[i].getDataRange().getValues();
       var studentSched = [];
       
@@ -161,6 +162,7 @@ function addStudents(){
 }
 //add multiple periods
 function createEvents(studentName, studentSched, firstDay, lastDay, calendar, periods){
+  console.log(calendar.getColor());
   var dateRange = getDates(firstDay, lastDay);
   //console.log(periods);
   for(var i = 0; i < dateRange.length; i++){
@@ -182,12 +184,14 @@ function addToCalendar(periods, lsPeriod, name, calendar, date){
     console.log(periods[i][0], lsPeriod);
     if(date.getDay() != 5){
       if(periods[i][0] == lsPeriod){
-        calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][1]), new Date(date.toDateString()+" "+ periods[i][2])); 
+        var temp = calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][1]), new Date(date.toDateString()+" "+ periods[i][2])); 
+        temp.setColor("7");
       }
     }
     else{
       if(periods[i][0] == lsPeriod){
-        calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][3]), new Date(date.toDateString()+" "+ periods[i][4])); 
+        var temp = calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][3]), new Date(date.toDateString()+" "+ periods[i][4])); 
+        temp.setColor("7");
       }
     }
   }
@@ -226,6 +230,22 @@ function clearStudent(){
           console.log("test");
 
      event[j].deleteEvent();//this doesnt delete everything
+    }
+  }
+}
+function clearAll(){
+    var calendar = CalendarApp.getCalendarsByName("Learning Strategies Students")[0];
+  var sheet = SpreadsheetApp.getActive().getSheetByName("data");
+  var sDate = sheet.getRange(18, 2).getDisplayValue();
+  var eDate = sheet.getRange(19, 2).getDisplayValue();
+ 
+   var dateRange = getDates(new Date(sDate), new Date(eDate));
+      console.log(sDate, eDate);
+
+  for(var i = 0; i < dateRange.length; i++){
+    var event = calendar.getEventsForDay(dateRange[i], {search: "LS"});
+    for(var j = 0; j<event.length; j++){
+     event[j].deleteEvent();
     }
   }
 }
