@@ -171,8 +171,14 @@ function createEvents(studentName, studentSched, firstDay, lastDay, calendar, pe
       for(var j = 0; j<studentSched.length; j++){
         var dayString = "Day "+studentSched[j][0];
         if(event.getTitle() == dayString){
-
-          addToCalendar(periods, studentSched[j][1], studentName, calendar, dateRange[i]);
+          if(studentSched[j][1].indexOf(',') > -1){
+            var schedHolder = studentSched[j][1].split(',');
+            for(var k = 0; k<schedHolder.length; k++){
+              addToCalendar(periods, schedHolder[k].trim(), studentName, calendar, dateRange[i]);
+            }
+          }else{
+            addToCalendar(periods, studentSched[j][1], studentName, calendar, dateRange[i]);
+          }
         }
       }
     }
