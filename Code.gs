@@ -20,7 +20,7 @@ function create(){
   var days = 0;
   var noSchool = [];
   for(var i = 0; i<dataValues.length; i++){
-    if(dataValues[i][0] == "First Day"){
+    if(dataValues[i][0] == "First Day (Day 1)"){
       firstDay = dataValues[i][1]; 
     }
     if(dataValues[i][0] == "Last Day"){
@@ -120,10 +120,10 @@ function addStudents(){
   var firstDay = 0;
   var lastDay = 0;
   var days = 0;
-  var regularPeriods = dataSheet.getRange("A3:E9").getDisplayValues(); //add fridays
+  var regularPeriods = dataSheet.getRange("A3:E13").getDisplayValues(); //add fridays
   
   for(var i = 0; i<dataValues.length; i++){
-    if(dataValues[i][0] == "First Day"){
+    if(dataValues[i][0] == "First Day (Day 1)"){
       firstDay = dataValues[i][1]; 
     }
     if(dataValues[i][0] == "Last Day"){
@@ -185,13 +185,13 @@ function addToCalendar(periods, lsPeriod, name, calendar, date){
     if(date.getDay() != 5){
       if(periods[i][0] == lsPeriod){
         var temp = calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][1]), new Date(date.toDateString()+" "+ periods[i][2])); 
-        temp.setColor("7");
+        temp.setColor("10");
       }
     }
     else{
       if(periods[i][0] == lsPeriod){
         var temp = calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][3]), new Date(date.toDateString()+" "+ periods[i][4])); 
-        temp.setColor("7");
+        temp.setColor("10");
       }
     }
   }
@@ -199,26 +199,27 @@ function addToCalendar(periods, lsPeriod, name, calendar, date){
 
 function getDates(startDate, stopDate) {
   Date.prototype.addDays = function(days) {
-  var dat = new Date(this.valueOf());
-  dat.setDate(dat.getDate() + days);
-  return dat;
-}
-
-    var dateArray = new Array();
-    var currentDate = startDate;
-    while (currentDate <= stopDate) {
-        dateArray.push(new Date (currentDate));
-        currentDate = currentDate.addDays(1);
-    }
-    return dateArray;
+    var dat = new Date(this.valueOf());
+    dat.setDate(dat.getDate() + days);
+    return dat;
+  }
+  
+  var dateArray = new Array();
+  var currentDate = startDate;
+  while (currentDate <= stopDate) {
+    dateArray.push(new Date (currentDate));
+    currentDate = currentDate.addDays(1);
+  }
+  return dateArray;
 }
 
 function clearStudent(){
-    var calendar = CalendarApp.getCalendarsByName("Learning Strategies Students")[0];
   var sheet = SpreadsheetApp.getActive().getSheetByName("data");
-  var name = sheet.getRange(17, 2).getDisplayValue();
-  var sDate = sheet.getRange(18, 2).getDisplayValue();
-  var eDate = sheet.getRange(19, 2).getDisplayValue();
+    var calendar = CalendarApp.getCalendarsByName(sheet.getRange(18, 2).getDisplayValue())[0];
+  
+  var name = sheet.getRange(21, 2).getDisplayValue();
+  var sDate = sheet.getRange(22, 2).getDisplayValue();
+  var eDate = sheet.getRange(23, 2).getDisplayValue();
  
    var dateRange = getDates(new Date(sDate), new Date(eDate));
       console.log(sDate, eDate);
@@ -234,10 +235,12 @@ function clearStudent(){
   }
 }
 function clearAll(){
-    var calendar = CalendarApp.getCalendarsByName("Learning Strategies Students")[0];
+ 
+   
   var sheet = SpreadsheetApp.getActive().getSheetByName("data");
-  var sDate = sheet.getRange(18, 2).getDisplayValue();
-  var eDate = sheet.getRange(19, 2).getDisplayValue();
+   var calendar = CalendarApp.getCalendarsByName(sheet.getRange(18, 2).getDisplayValue())[0];
+  var sDate = sheet.getRange(22, 2).getDisplayValue();
+  var eDate = sheet.getRange(23, 2).getDisplayValue();
  
    var dateRange = getDates(new Date(sDate), new Date(eDate));
       console.log(sDate, eDate);
@@ -251,6 +254,7 @@ function clearAll(){
 }
 
 function erase(){
-  var calendar = CalendarApp.getCalendarsByName("Learning Strategies Students")[0];
+  var sheet = SpreadsheetApp.getActive().getSheetByName("data");
+  var calendar = CalendarApp.getCalendarsByName(sheet.getRange(18, 2).getDisplayValue())[0];
   calendar.deleteCalendar();
 }
