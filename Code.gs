@@ -181,13 +181,13 @@ function addToCalendar(periods, lsPeriod, name, calendar, date){
   for(var i = 0; i<periods.length; i++){
     console.log(periods[i][0], lsPeriod);
     if(date.getDay() != 5){
-      if(periods[0][i][0] == lsPeriod){
-        calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[0][i][1]), new Date(date.toDateString()+" "+ periods[0][i][2])); 
+      if(periods[i][0] == lsPeriod){
+        calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][1]), new Date(date.toDateString()+" "+ periods[i][2])); 
       }
     }
     else{
-      if(periods[0][i][0] == lsPeriod){
-        calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[0][i][3]), new Date(date.toDateString()+" "+ periods[0][i][4])); 
+      if(periods[i][0] == lsPeriod){
+        calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][3]), new Date(date.toDateString()+" "+ periods[i][4])); 
       }
     }
   }
@@ -215,13 +215,16 @@ function clearStudent(){
   var name = sheet.getRange(17, 2).getDisplayValue();
   var sDate = sheet.getRange(18, 2).getDisplayValue();
   var eDate = sheet.getRange(19, 2).getDisplayValue();
-  
-   var dateRange = getDates(sDate, eDate);
-  
+ 
+   var dateRange = getDates(new Date(sDate), new Date(eDate));
+      console.log(sDate, eDate);
+
   for(var i = 0; i < dateRange.length; i++){
     var event = calendar.getEventsForDay(dateRange[i], {search: name});
-    
+    console.log(event);
     for(var j = 0; j<event.length; j++){
+          console.log("test");
+
      event[j].deleteEvent();//this doesnt delete everything
     }
   }
