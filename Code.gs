@@ -6,6 +6,7 @@ function onOpen() {
   .addItem('Add Students', 'addStudents')
   .addItem('Clear Student', 'clearStudent')
   .addItem('Clear Full Range', 'clearAll')
+  .addItem('New School Year', 'newSchoolYear')
   .addToUi();
 }
 
@@ -53,6 +54,56 @@ function create(){
     summary: 'A calendar to organize students with periods in the Student Centre.',
     color: CalendarApp.Color.BLUE
   });  
+  
+  setDays(days, new Date(firstDay),
+          new Date(lastDay), calendar, noSchool);
+  
+  // var event = calendar.createEvent('Apollo 11 Landing',
+  //  new Date('April 17, 2018 20:00:00 EST'),
+  //   new Date('April 17, 2018 21:00:00 EST'));
+  
+}
+function newSchoolYear(){
+  var ss = SpreadsheetApp.getActive();
+  var dataSheet = ss.getSheetByName("data"); 
+  
+  var dataValues = dataSheet.getDataRange().getDisplayValues();
+  var calendarName = 0;
+  var firstDay = 0;
+  var lastDay = 0;
+  var days = 0;
+  var noSchool = [];
+  for(var i = 0; i<dataValues.length; i++){
+    if(dataValues[i][0] == "First Day (Day 1)"){
+      firstDay = dataValues[i][1]; 
+    }
+    if(dataValues[i][0] == "Last Day"){
+      lastDay = dataValues[i][1];
+      
+    }
+    if(dataValues[i][0] == "Calendar Name"){
+      calendarName = dataValues[i][1]; 
+      
+    }
+    if(dataValues[i][0] == "Days in Schedule"){
+      days = Number(dataValues[i][1]); 
+    }
+    if(dataValues[i][0] == "No School"){
+      for(var j = 1; j< dataValues[i].length; j++){
+        if(dataValues[i][j] == ""){      
+          break;
+        }
+        else{
+          noSchool.push(new Date(dataValues[i][j])); 
+        }
+      }
+      break;
+    }
+  }
+  
+  
+  
+  var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
   
   setDays(days, new Date(firstDay),
           new Date(lastDay), calendar, noSchool);
@@ -120,7 +171,8 @@ function addStudents(){
   var firstDay = 0;
   var lastDay = 0;
   var days = 0;
-  var regularPeriods = dataSheet.getRange("A3:E13").getDisplayValues(); //add fridays
+  var periodsRange = 0;
+  
   
   for(var i = 0; i<dataValues.length; i++){
     if(dataValues[i][0] == "First Day (Day 1)"){
@@ -132,14 +184,19 @@ function addStudents(){
     if(dataValues[i][0] == "Calendar Name"){
       calendarName = dataValues[i][1]; 
       break;
-    }    
+    }   
+    if(dataValues[i][0] == "Schedule Range"){
+      periodsRange = dataValues[i][1]; 
+    }
   }
+  
+  var regularPeriods = dataSheet.getRange(periodsRange).getDisplayValues(); //add fridays
   
   //track old and new students somehow
   for(var i = 0; i<sheets.length; i++){
     if(sheets[i].getName() != "data"){
-     var name = sheets[i].getRange(1,1).getDisplayValue();
-     var studentSheet = sheets[i].getDataRange().getValues();
+      var name = sheets[i].getRange(1,1).getDisplayValue();
+      var studentSheet = sheets[i].getDataRange().getValues();
       var studentSched = [];
       
       for(var j = 1; j< studentSheet.length; j++){
@@ -149,10 +206,10 @@ function addStudents(){
           break;
         }
         else{
-         studentSched.push([studentSheet[j][0], studentSheet[j][1]]); 
+          studentSched.push([studentSheet[j][0], studentSheet[j][1]]); 
         }
       }
-     // console.log(studentSched);
+      // console.log(studentSched);
       createEvents(name, studentSched, new Date(firstDay), new Date(lastDay), CalendarApp.getCalendarsByName(calendarName)[0], regularPeriods);
     }
     
@@ -220,47 +277,93 @@ function getDates(startDate, stopDate) {
 }
 
 function clearStudent(){
-  var sheet = SpreadsheetApp.getActive().getSheetByName("data");
-    var calendar = CalendarApp.getCalendarsByName(sheet.getRange(18, 2).getDisplayValue())[0];
+  var ss = SpreadsheetApp.getActive();
+  var dataSheet = ss.getSheetByName("data"); 
+  var dataValues = dataSheet.getDataRange().getDisplayValues();
+  var calendarName = 0;
+  var name = 0;
+  var sDate = 0;
+  var eDate = 0;
   
-  var name = sheet.getRange(21, 2).getDisplayValue();
-  var sDate = sheet.getRange(22, 2).getDisplayValue();
-  var eDate = sheet.getRange(23, 2).getDisplayValue();
- 
-   var dateRange = getDates(new Date(sDate), new Date(eDate));
-      console.log(sDate, eDate);
-
+  for(var i = 0; i<dataValues.length; i++){
+    if(dataValues[i][0] == "Student to Clear"){
+      name = dataValues[i][1]; 
+    }
+    if(dataValues[i][0] == "Beginning of Clear Range"){
+      sDate = dataValues[i][1]; 
+    }
+    if(dataValues[i][0] == "End of Clear Range"){
+      eDate = dataValues[i][1];      
+    }
+    if(dataValues[i][0] == "Calendar Name"){
+      calendarName = dataValues[i][1]; 
+      break;
+    }   
+  }
+  
+  var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
+  
+  
+  var dateRange = getDates(new Date(sDate), new Date(eDate));
+  
+  
   for(var i = 0; i < dateRange.length; i++){
     var event = calendar.getEventsForDay(dateRange[i], {search: name});
-    console.log(event);
     for(var j = 0; j<event.length; j++){
-          console.log("test");
-
-     event[j].deleteEvent();//this doesnt delete everything
+      event[j].deleteEvent();
     }
   }
 }
-function clearAll(){
- 
-   
-  var sheet = SpreadsheetApp.getActive().getSheetByName("data");
-   var calendar = CalendarApp.getCalendarsByName(sheet.getRange(18, 2).getDisplayValue())[0];
-  var sDate = sheet.getRange(22, 2).getDisplayValue();
-  var eDate = sheet.getRange(23, 2).getDisplayValue();
- 
-   var dateRange = getDates(new Date(sDate), new Date(eDate));
-      console.log(sDate, eDate);
 
+function clearAll(){
+  var ss = SpreadsheetApp.getActive();
+  var dataSheet = ss.getSheetByName("data"); 
+  var dataValues = dataSheet.getDataRange().getDisplayValues();
+  var calendarName = 0;
+  var sDate = 0;
+  var eDate = 0;
+  
+  for(var i = 0; i<dataValues.length; i++){
+    if(dataValues[i][0] == "Beginning of Clear Range"){
+      sDate = dataValues[i][1]; 
+    }
+    if(dataValues[i][0] == "End of Clear Range"){
+      eDate = dataValues[i][1];      
+    }
+    if(dataValues[i][0] == "Calendar Name"){
+      calendarName = dataValues[i][1]; 
+      break;
+    }   
+  }
+  
+  var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
+  
+  
+  var dateRange = getDates(new Date(sDate), new Date(eDate));
+  console.log(sDate, eDate);
+  
   for(var i = 0; i < dateRange.length; i++){
     var event = calendar.getEventsForDay(dateRange[i], {search: "LS"});
     for(var j = 0; j<event.length; j++){
-     event[j].deleteEvent();
+      event[j].deleteEvent();
     }
   }
 }
 
 function erase(){
-  var sheet = SpreadsheetApp.getActive().getSheetByName("data");
-  var calendar = CalendarApp.getCalendarsByName(sheet.getRange(18, 2).getDisplayValue())[0];
+  var ss = SpreadsheetApp.getActive();
+  var dataSheet = ss.getSheetByName("data"); 
+  var dataValues = dataSheet.getDataRange().getDisplayValues();
+  var calendarName = 0;
+  
+  
+  for(var i = 0; i<dataValues.length; i++){
+    if(dataValues[i][0] == "Calendar Name"){
+      calendarName = dataValues[i][1]; 
+      break;
+    }   
+  }
+  
+  var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
   calendar.deleteCalendar();
 }
