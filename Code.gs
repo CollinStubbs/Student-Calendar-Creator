@@ -324,10 +324,11 @@ function clearAll(){
     }
     if(dataValues[i][0] == "End of Clear Range"){
       eDate = dataValues[i][1];      
+      break;
     }
     if(dataValues[i][0] == "Calendar Name"){
       calendarName = dataValues[i][1]; 
-      break;
+      
     }   
   }
   
