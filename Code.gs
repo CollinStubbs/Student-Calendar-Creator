@@ -57,11 +57,7 @@ function create(){
   
   setDays(days, new Date(firstDay),
           new Date(lastDay), calendar, noSchool);
-  
-  // var event = calendar.createEvent('Apollo 11 Landing',
-  //  new Date('April 17, 2018 20:00:00 EST'),
-  //   new Date('April 17, 2018 21:00:00 EST'));
-  
+   
 }
 function newSchoolYear(){
   var ss = SpreadsheetApp.getActive();
@@ -190,9 +186,8 @@ function addStudents(){
     }
   }
   
-  var regularPeriods = dataSheet.getRange(periodsRange).getDisplayValues(); //add fridays
+  var regularPeriods = dataSheet.getRange(periodsRange).getDisplayValues(); 
   
-  //track old and new students somehow
   for(var i = 0; i<sheets.length; i++){
     if(sheets[i].getName() != "data"){
       var name = sheets[i].getRange(1,1).getDisplayValue();
@@ -217,7 +212,6 @@ function addStudents(){
   }
   
 }
-//add multiple periods
 function createEvents(studentName, studentSched, firstDay, lastDay, calendar, periods){
   console.log(calendar.getColor());
   var dateRange = getDates(firstDay, lastDay);
@@ -284,24 +278,22 @@ function clearStudent(){
   var name = 0;
   var sDate = 0;
   var eDate = 0;
-  
   for(var i = 0; i<dataValues.length; i++){
-    console.log(dataValues[i][0]);
     if(dataValues[i][0] == "Student to Clear"){
       name = dataValues[i][1]; 
     }
-    if(dataValues[i][0] == "Beginning of Clear Range"){
+    if(dataValues[i][0].indexOf("Beginning of Clear Range")>-1){
       sDate = dataValues[i][1]; 
     }
     if(dataValues[i][0] == "End of Clear Range"){
       eDate = dataValues[i][1];      
+       break;
     }
     if(dataValues[i][0] == "Calendar Name"){
       calendarName = dataValues[i][1]; 
-      break;
+     
     }   
   }
-  
   var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
   
   
@@ -309,6 +301,7 @@ function clearStudent(){
   
   
   for(var i = 0; i < dateRange.length; i++){
+    
     var event = calendar.getEventsForDay(dateRange[i], {search: name}); // look at the console data for this, nothing is read
     
     for(var j = 0; j<event.length; j++){
