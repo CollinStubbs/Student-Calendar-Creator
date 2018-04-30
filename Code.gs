@@ -1,9 +1,13 @@
+//Add in attendance sheet creation
+//create attendance sheet for every student
+
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('LS Calendar')
   .addItem('Create Calendar', 'create')
   .addItem('Delete Calendar', 'erase')
   .addItem('Add Students', 'addStudents')
+  
   .addItem('Clear Student', 'clearStudent')
   .addItem('Clear Full Range', 'clearAll')
   .addItem('New School Year', 'newSchoolYear')
@@ -104,14 +108,29 @@ function newSchoolYear(){
   setDays(days, new Date(firstDay),
           new Date(lastDay), calendar, noSchool);
   
+  createAttendance();
+  //days, new Date(firstDay), new Date(lastDay), calendar, noSchool);
+  //days, start, end, calendar, noSchool
+  
+  
   // var event = calendar.createEvent('Apollo 11 Landing',
   //  new Date('April 17, 2018 20:00:00 EST'),
   //   new Date('April 17, 2018 21:00:00 EST'));
   
 }
 
-function setDays(days, start, end, calendar, noSchool){
+function createAttendance(){
+  //var currentYear = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy");
+  folder = DriveApp.createFolder('LS Attendance');
   
+  var ss = SpreadsheetApp.create("Learning Strategies Attendance");
+  folder.addFile(DriveApp.getFileById(ss.getId()));  
+  
+  var idSheet = SpreadsheetApp.getActiveSpreadsheet();
+}
+
+
+function setDays(days, start, end, calendar, noSchool){  
   var day = 1;
   // Returns an array of dates between the two dates --- from miguelmota on github
   var getDates = function(startDay, endDay) {
@@ -168,6 +187,7 @@ function addStudents(){
   var lastDay = 0;
   var days = 0;
   var periodsRange = 0;
+  var attendanceName = 0;
   
   
   for(var i = 0; i<dataValues.length; i++){
@@ -179,10 +199,13 @@ function addStudents(){
     }
     if(dataValues[i][0] == "Calendar Name"){
       calendarName = dataValues[i][1]; 
-      break;
+     
     }   
     if(dataValues[i][0] == "Schedule Range"){
       periodsRange = dataValues[i][1]; 
+    }
+    if(dataValues[i][0] == "Attendance Name"){
+      attendanceName = dataValues[i][1];
     }
   }
   
@@ -206,12 +229,35 @@ function addStudents(){
       }
       // console.log(studentSched);
       createEvents(name, studentSched, new Date(firstDay), new Date(lastDay), CalendarApp.getCalendarsByName(calendarName)[0], regularPeriods);
+      addToAttendance(name, studentSched, new Date(firstDay), new Date(lastDay), attendanceName);
     }
     
     
   }
   
 }
+
+function addToAttendance(name, studentSched, firstDay, lastDay,aName){
+ // var drive = DriveApp.getFoldersByName("LS Attendance")[0];
+  var file = DriveApp.getFilesByName(aName)[0];
+  var ss = SpreadsheetApp.open(file);
+  var dateRange = getDates(firstDay, lastDay);
+  //check if sheet named "name" exists- dont do this, if student gets updated it'll wreck it
+  //if no create sheet named "name"
+  //create headings for all days in range
+  //y - date, x - period
+  
+  var sheet = ss.insertSheet(name);
+  
+  sheet.getRange(1,1).setValue(name);
+  for(var i = 0; i<dateRange.length; i++){
+    sheet.getRange(2, 3+i).setValue(dateRange[i].toDateString());//how can i get the school day from the date
+  }
+  
+  
+                                                         
+}
+
 function createEvents(studentName, studentSched, firstDay, lastDay, calendar, periods){
   console.log(calendar.getColor());
   var dateRange = getDates(firstDay, lastDay);
