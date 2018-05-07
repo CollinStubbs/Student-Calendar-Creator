@@ -1,6 +1,8 @@
 //Add in attendance sheet creation
 //create attendance sheet for every student
 
+var attendanceDates = []; //append when created in calendar, access in attendance creation
+
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('LS Calendar')
@@ -72,6 +74,7 @@ function newSchoolYear(){
   var firstDay = 0;
   var lastDay = 0;
   var days = 0;
+  var attendanceName = 0;
   var noSchool = [];
   for(var i = 0; i<dataValues.length; i++){
     if(dataValues[i][0] == "First Day (Day 1)"){
@@ -88,16 +91,19 @@ function newSchoolYear(){
     if(dataValues[i][0] == "Days in Schedule"){
       days = Number(dataValues[i][1]); 
     }
+    if(dataValues[i][0] == "Attendance Name"){
+      attendanceName = dataValues[i][1]; 
+    }
     if(dataValues[i][0] == "No School"){
       for(var j = 1; j< dataValues[i].length; j++){
         if(dataValues[i][j] == ""){      
-          break;
+          
         }
         else{
           noSchool.push(new Date(dataValues[i][j])); 
         }
       }
-      break;
+      
     }
   }
   
@@ -108,7 +114,7 @@ function newSchoolYear(){
   setDays(days, new Date(firstDay),
           new Date(lastDay), calendar, noSchool);
   
-  createAttendance();
+  createAttendance(attendanceName);
   //days, new Date(firstDay), new Date(lastDay), calendar, noSchool);
   //days, start, end, calendar, noSchool
   
@@ -119,14 +125,12 @@ function newSchoolYear(){
   
 }
 
-function createAttendance(){
+function createAttendance(attendanceName){
   //var currentYear = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy");
   folder = DriveApp.createFolder('LS Attendance');
   
-  var ss = SpreadsheetApp.create("Learning Strategies Attendance");
-  folder.addFile(DriveApp.getFileById(ss.getId()));  
-  
-  var idSheet = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.create(attendanceName);
+  folder.addFile(DriveApp.getFileById(ss.getId()));    
 }
 
 
@@ -239,8 +243,9 @@ function addStudents(){
 
 function addToAttendance(name, studentSched, firstDay, lastDay,aName){
  // var drive = DriveApp.getFoldersByName("LS Attendance")[0];
-  var file = DriveApp.getFilesByName(aName)[0];
-  var ss = SpreadsheetApp.open(file);
+  var file = DriveApp.getFilesByName(aName);
+
+  var ss = SpreadsheetApp.open(file.next());
   var dateRange = getDates(firstDay, lastDay);
   //check if sheet named "name" exists- dont do this, if student gets updated it'll wreck it
   //if no create sheet named "name"
@@ -251,11 +256,25 @@ function addToAttendance(name, studentSched, firstDay, lastDay,aName){
   
   sheet.getRange(1,1).setValue(name);
   for(var i = 0; i<dateRange.length; i++){
-    sheet.getRange(2, 3+i).setValue(dateRange[i].toDateString());//how can i get the school day from the date
+    
+    sheet.getRange(2, 1+i).setValue(dateRange[i].toDateString());//how can i get the school day from the date, generate array from "createEvents" and pass it through
+  }  
+  sheet.getRange(name + "!3:3").setBackground("#993333");
+  sheet.getRange(name + "!2:3").setFontWeight("bold");
+  sheet.getRange(1,1).setFontWeight("bold").setBackground("#FFFF00").setBorder(false,false, true, false, false, true);//border doesnt do anything
+  for(var i = 0; i<dateRange.length; i++){ 
+    for(var j = 0; j<attendanceDates.length; j++){
+      if(dateRange[i].getDay() == 0 || dateRange[i].getDay() == 6){
+        sheet.getRange(3, 1+i).setBackground("#000000");      
+      }
+      else{
+        if(dateRange[i].toDateString().indexOf(attendanceDates[j]) >-1) {
+          
+          sheet.getRange(3, 1+i).setBackground("#FFFFFF");      
+        }
+      }    
+    }
   }
-  
-  
-                                                         
 }
 
 function createEvents(studentName, studentSched, firstDay, lastDay, calendar, periods){
@@ -288,12 +307,14 @@ function addToCalendar(periods, lsPeriod, name, calendar, date){
     if(date.getDay() != 5){
       if(periods[i][0] == lsPeriod){
         var temp = calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][1]), new Date(date.toDateString()+" "+ periods[i][2])); 
+        attendanceDates.push(date.toDateString());
         temp.setColor("10");
       }
     }
     else{
       if(periods[i][0] == lsPeriod){
         var temp = calendar.createEvent("LS - "+name, new Date(date.toDateString()+" "+periods[i][3]), new Date(date.toDateString()+" "+ periods[i][4])); 
+        attendanceDates.push(date.toDateString());
         temp.setColor("10");
       }
     }
