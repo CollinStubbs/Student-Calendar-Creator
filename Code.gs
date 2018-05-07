@@ -63,7 +63,7 @@ function create(){
   
   setDays(days, new Date(firstDay),
           new Date(lastDay), calendar, noSchool);
-   
+  
 }
 function newSchoolYear(){
   var ss = SpreadsheetApp.getActive();
@@ -127,8 +127,10 @@ function newSchoolYear(){
 
 function createAttendance(attendanceName){
   //var currentYear = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy");
-  folder = DriveApp.createFolder('LS Attendance');
-  
+  var check = DriveApp.getFoldersByName('LS Attendance');
+  if(!check.hasNext()){
+    folder = DriveApp.createFolder('LS Attendance');
+  }
   var ss = SpreadsheetApp.create(attendanceName);
   folder.addFile(DriveApp.getFileById(ss.getId()));    
 }
@@ -203,7 +205,7 @@ function addStudents(){
     }
     if(dataValues[i][0] == "Calendar Name"){
       calendarName = dataValues[i][1]; 
-     
+      
     }   
     if(dataValues[i][0] == "Schedule Range"){
       periodsRange = dataValues[i][1]; 
@@ -242,17 +244,24 @@ function addStudents(){
 }
 
 function addToAttendance(name, studentSched, firstDay, lastDay,aName){
- // var drive = DriveApp.getFoldersByName("LS Attendance")[0];
+  // var drive = DriveApp.getFoldersByName("LS Attendance")[0];
   var file = DriveApp.getFilesByName(aName);
-
+  
   var ss = SpreadsheetApp.open(file.next());
   var dateRange = getDates(firstDay, lastDay);
   //check if sheet named "name" exists- dont do this, if student gets updated it'll wreck it
   //if no create sheet named "name"
   //create headings for all days in range
   //y - date, x - period
+  var sheetCheck = ss.getSheetByName(name);
+  if(sheetCheck != null){
+    var hh = new Date(firstDay);
+    var sheet = ss.insertSheet(name+hh.toDateString());
+  }
+  else{
+   var sheet = ss.insertSheet(name); 
+  }
   
-  var sheet = ss.insertSheet(name);
   
   sheet.getRange(1,1).setValue(name);
   for(var i = 0; i<dateRange.length; i++){
@@ -262,6 +271,9 @@ function addToAttendance(name, studentSched, firstDay, lastDay,aName){
   sheet.getRange(name + "!3:3").setBackground("#993333");
   sheet.getRange(name + "!2:3").setFontWeight("bold");
   sheet.getRange(1,1).setFontWeight("bold").setBackground("#FFFF00").setBorder(false,false, true, false, false, true);//border doesnt do anything
+  sheet.getRange(5,3, 1, 2).setValues([["Absences","=COUNTIF(3:3, \"A\")"]]);
+  sheet.getRange(6,3, 1, 2).setValues([["Presents","=COUNTIF(3:3, \"P\")"]]);
+  
   for(var i = 0; i<dateRange.length; i++){ 
     for(var j = 0; j<attendanceDates.length; j++){
       if(dateRange[i].getDay() == 0 || dateRange[i].getDay() == 6){
@@ -274,6 +286,12 @@ function addToAttendance(name, studentSched, firstDay, lastDay,aName){
         }
       }    
     }
+  }
+  
+  var check = ss.getSheetByName("Sheet1");
+  if(check != null){
+    ss.setActiveSheet(ss.getSheetByName("Sheet1"));
+    ss.deleteActiveSheet();
   }
 }
 
@@ -354,11 +372,11 @@ function clearStudent(){
     }
     if(dataValues[i][0] == "End of Clear Range"){
       eDate = dataValues[i][1];      
-       break;
+      break;
     }
     if(dataValues[i][0] == "Calendar Name"){
       calendarName = dataValues[i][1]; 
-     
+      
     }   
   }
   var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
