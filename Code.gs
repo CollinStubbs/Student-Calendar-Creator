@@ -269,8 +269,8 @@ function addToAttendance(name, studentSched, firstDay, lastDay,aName){
     sheet.getRange(2, 1+i).setValue(dateRange[i].toDateString());//how can i get the school day from the date, generate array from "createEvents" and pass it through
   }  
   sheet.getRange(name + "!3:3").setBackground("#993333");
-  sheet.getRange(name + "!2:3").setFontWeight("bold");
-  sheet.getRange(1,1).setFontWeight("bold").setBackground("#FFFF00").setBorder(false,false, true, false, false, true);//border doesnt do anything
+  sheet.getRange(name + "!2:2").setFontWeight("bold").setBackground("#EFEFEF").setBorder(false,false, true, false, false, true);
+  sheet.getRange(1,1).setFontWeight("bold").setBackground("#FFFF00");
   sheet.getRange(5,3, 1, 2).setValues([["Absences","=COUNTIF(3:3, \"A\")"]]);
   sheet.getRange(6,3, 1, 2).setValues([["Presents","=COUNTIF(3:3, \"P\")"]]);
   
